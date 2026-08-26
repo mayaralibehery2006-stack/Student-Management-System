@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>لوحة التحكم - Portal الطالب</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; display: flex; height: 100vh; background: #f8fafc; }
+        .sidebar { width: 260px; background: #1e293b; color: white; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .sidebar h2 { font-size: 18px; color: #38bdf8; margin-bottom: 20px; text-align: center; }
+        .sidebar a { color: #cbd5e1; text-decoration: none; padding: 10px 15px; border-radius: 6px; font-size: 14px; }
+        .sidebar a:hover { background: #334155; color: white; }
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); margin-bottom: 25px; }
+        .user-card { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center; }
+        .stat-box h3 { margin: 5px 0 0; color: #3b82f6; font-size: 22px; }
+        .section-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .card h3 { border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-top: 0; color: #1e293b; }
+        ul { padding-right: 20px; margin: 0; }
+        li { margin-bottom: 10px; color: #475569; }
+        .badge { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>🎓 Portal الجامعة</h2>
+        <a href="#dashboard">📊 اللوحة الرئيسية</a>
+        <a href="#courses">📚 المقررات الدراسية</a>
+        <a href="#assignments">📝 الواجبات (Assignments)</a>
+        <a href="#schedule">📅 الجدول الدراسي</a>
+        <a href="#doctors">👨‍🏫 أعضاء الهيئة التدريسية</a>
+        <a href="#materials">📁 الملازم والمواد الدراسية</a>
+        <a href="#announcements">📢 الإعلانات</a>
+        <a href="#reviews">⭐ تقييم الأطباء</a>
+        <a href="/logout" style="margin-top: auto; color: #ef4444;">🚪 تسجيل الخروج</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="user-card">
+                <img src="<%= user.avatar %>" class="avatar">
+                <div>
+                    <h3 style="margin: 0;"><%= user.name %></h3>
+                    <small style="color: #64748b;">حساب طالب أكاديمي</small>
+                </div>
+            </div>
+            <div>
+                <a href="/logout" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none;">خروج</a>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box"><small>المعدل التراكمي (GPA)</small><h3><%= user.gpa %></h3></div>
+            <div class="stat-box"><small>نسبة الحضور</small><h3><%= user.attendance %></h3></div>
+            <div class="stat-box"><small>المواد المسجلة</small><h3><%= courses.length %></h3></div>
+            <div class="stat-box"><small>الواجبات النشطة</small><h3><%= assignments.length %></h3></div>
+        </div>
+
+        <div class="section-grid">
+            <div class="card" id="courses">
+                <h3>📚 المواد المسجلة</h3>
+                <ul>
+                    <% courses.forEach(c => { %>
+                        <li><strong><%= c.title %></strong> - <span class="badge"><%= c.code %></span><br><small>الدكتور: <%= c.doctor %></small></li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="card" id="assignments">
+                <h3>📝 الواجبات (Assignments)</h3>
+                <ul>
+                    <% assignments.forEach(a => { %>
+                        <li><strong><%= a.title %></strong> (<%= a.course %>)<br><small style="color: #d97706;">موعد التسليم: <%= a.deadline %></small></li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="card" id="schedule">
+                <h3>📅 الجدول الدراسي</h3>
+                <ul>
+                    <% schedule.forEach(s => { %>
+                        <li><strong><%= s.day %>:</strong> <%= s.subject %> - <%= s.room %><br><small><%= s.time %></small></li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="card" id="announcements">
+                <h3>📢 الإعلانات الهامة</h3>
+                <ul>
+                    <% announcements.forEach(ann => { %>
+                        <li><strong><%= ann.title %></strong> <span class="badge"><%= ann.category %></span><br><small><%= ann.date %></small></li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="card" id="doctors">
+                <h3>👨‍🏫 دكاترة المواد</h3>
+                <ul>
+                    <% doctors.forEach(doc => { %>
+                        <li><strong><%= doc.name %></strong> - <%= doc.department %><br><small><%= doc.email %></small></li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="card" id="materials">
+                <h3>📁 الملازم والمواد الدراسية</h3>
+                <ul>
+                    <% materials.forEach(m => { %>
+                        <li><strong><%= m.title %></strong> (<%= m.course %>)</li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

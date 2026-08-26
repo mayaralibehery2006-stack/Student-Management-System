@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تسجيل الدخول - Portal</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            background-color: #0f172a; /* لون احتياطي في حال عدم تحميل الصورة */
+            background-image: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url('/bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(8px);
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            width: 350px; 
+        }
+        .card h2 { text-align: center; margin-bottom: 20px; color: #1e293b; }
+        input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box; }
+        button { background: #3b82f6; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .hint { font-size: 12px; color: #64748b; margin-top: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>تسجيل الدخول</h2>
+        <% if(error) { %><p style="color: red; font-size: 14px;"><%= error %></p><% } %>
+        <form action="/login" method="POST">
+            <label>البريد الإلكتروني</label>
+            <input type="email" name="email" value="student@univ.edu" required>
+            <label>كلمة السر</label>
+            <input type="password" name="password" value="123456" required>
+            <button type="submit">دخول المنصة</button>
+        </form>
+        <div class="hint">
+            <strong>بيانات التجربة:</strong><br>
+            • طالب: student@univ.edu | 123456<br>
+            • أدمن: admin@univ.edu | admin123
+        </div>
+    </div>
+</body>
+</html>

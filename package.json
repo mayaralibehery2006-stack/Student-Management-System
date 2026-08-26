@@ -1,0 +1,13 @@
+{
+	"name": "university-portal",
+	"version": "1.0.0",
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js"
+	},
+	"dependencies": {
+		"ejs": "^3.1.10",
+		"express": "^4.22.2",
+		"express-session": "^1.19.0"
+	}
+}

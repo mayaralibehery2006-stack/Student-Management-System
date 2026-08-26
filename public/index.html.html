@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --purple: #6d28d9; --bg-gray: #f8fafc; --text-dark: #1e293b; --card-bg: #ffffff; --border: #e2e8f0; }
+        .dark-mode { --bg-gray: #0f172a; --text-dark: #f8fafc; --card-bg: #1e293b; --border: #334155; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg-gray); color: var(--text-dark); min-height: 100vh; transition: 0.3s; }
+
+        /* استخدام صورة bg.jpg الموجودة في نفس مجلد index.html */
+        #login-screen { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background-image: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.6)), url('bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .login-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(8px);
+            padding: 40px; 
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 400px; 
+            text-align: center; 
+            color: #1e293b; 
+            box-shadow: 0 20px 30px rgba(0,0,0,0.3); 
+        }
+        .login-form input, .login-form select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; }
+        .login-btn { width: 100%; padding: 12px; background: var(--purple); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        #portal-screen { display: none; flex-direction: column; min-height: 100vh; }
+        .top-bar { background: var(--card-bg); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #f59e0b; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 30px 0 30px; max-width: 1100px; margin: 0 auto; width: 100%; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 15px; }
+        .stat-card i { font-size: 28px; color: var(--purple); }
+
+        .grid-container { padding: 30px; max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 25px; width: 100%; }
+        .portal-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .icon-box { width: 100px; height: 90px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; transition: 0.2s; }
+        .portal-item:hover .icon-box { transform: translateY(-5px); }
+        .icon-box i { font-size: 36px; color: #dc2626; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 850px; border-radius: 12px; padding: 25px; max-height: 85vh; overflow-y: auto; color: var(--text-dark); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .admin-controls { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; flex-wrap: wrap; }
+        .input-ctrl { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-gray); color: var(--text-dark); width: 100%; margin-bottom: 10px; }
+        .btn-action { padding: 8px 14px; background: var(--purple); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .data-table th, .data-table td { border: 1px solid var(--border); padding: 10px; text-align: left; font-size: 13px; }
+        .data-table th { background: var(--bg-gray); color: var(--purple); }
+
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; display: none; z-index: 200; }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Notification</div>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2 style="color:var(--purple); margin-bottom: 20px;">Innovation University</h2>
+            <form onsubmit="handleLogin(event)" class="login-form">
+                <select id="role-select">
+                    <option value="admin">Admin Panel</option>
+                    <option value="instructor">Instructor</option>
+                    <option value="student">Student Portal</option>
+                </select>
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" class="login-btn">Log in</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="portal-screen">
+        <div class="top-bar">
+            <div style="font-weight:bold; color:var(--purple); font-size:18px;"><i class="fa-solid fa-graduation-cap"></i> Innovation University</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn-action" style="background:transparent; color:var(--text-dark); border:1px solid var(--border);" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i> Theme</button>
+                <b id="user-display-role">Admin</b>
+                <button class="btn-action" style="background:#fee2e2; color:#dc2626;" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-bar" id="stats-section"></div>
+        <div class="grid-container" id="grid-items"></div>
+        <div style="text-align: center; padding: 15px;">
+            <button class="btn-action" style="background:#64748b; font-size: 11px;" onclick="resetSystemData()">Reset System Data (Default)</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-popup">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title-text" style="color:var(--purple);">Panel</h3>
+                <button style="border:none; background:none; cursor:pointer; font-size:20px; color:var(--text-dark);" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="modal-body-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserRole = 'admin';
+        let currentUsername = '';
+
+        const defaultDB = {
+            totalStudentsCount: 300,
+            students: [
+                { id: '24030054', name: 'Mariam Mohamed', dept: 'Computer Science', level: 'Level 3' },
+                { id: '24030066', name: 'Mayar Ali', dept: 'Computer Science', level: 'Level 3' }
+            ],
+            courses: [
+                { code: 'BS213', name: 'Project Management', instructor: 'Dr. Ahmed Negm', regStatus: 'Open' },
+                { code: 'CS230', name: 'Computer Graphics', instructor: 'Dr. Ahmed Salama', regStatus: 'Open' },
+                { code: 'CF229', name: 'Database Management System', instructor: 'Dr. Marwa', regStatus: 'Open' }
+            ],
+            studentGrades: [
+                { studentId: '24030054', code: 'BS213', course: 'Project Management', grade: 'A' },
+                { studentId: '24030054', code: 'CS230', course: 'Computer Graphics', grade: 'A+' },
+                { studentId: '24030054', code: 'CF229', course: 'Database Management System', grade: 'B' }
+            ],
+            requests: [
+                { id: 'REQ-101', name: 'Mariam Mohamed', type: 'Enrollment Certificate', status: 'Pending' },
+                { id: 'REQ-102', name: 'Mayar Ali', type: 'Official Transcript', status: 'Approved' },
+                { id: 'REQ-103', name: 'Ahmed Hassan', type: 'Course Exemption Request', status: 'Pending' }
+            ]
+        };
+
+        function getDB() {
+            const data = localStorage.getItem('univ_db_v7');
+            return data ? JSON.parse(data) : defaultDB;
+        }
+
+        function saveDB(data) {
+            localStorage.setItem('univ_db_v7', JSON.stringify(data));
+            showToast("Saved successfully!");
+            renderStats();
+        }
+
+        function resetSystemData() {
+            if(confirm("Reset database to initial state?")) {
+                localStorage.removeItem('univ_db_v7');
+                showToast("System Reset!");
+                initPortal();
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2500);
+        }
+
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+
+        function isInstructorMatch(instructorName, enteredUsername) {
+            const cleanInstructor = instructorName.toLowerCase().replace('dr.', '').replace('dr', '').trim();
+            const cleanInput = enteredUsername.toLowerCase().replace('dr.', '').replace('dr', '').trim();
+            return cleanInstructor.includes(cleanInput) || cleanInput.includes(cleanInstructor);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const role = document.getElementById('role-select').value;
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value;
+
+            if (p === '1234') {
+                currentUserRole = role;
+                currentUsername = u;
+                localStorage.setItem('user_role', role);
+                localStorage.setItem('user_name', u);
+                initPortal();
+            } else {
+                showToast("Invalid Credentials!");
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('user_role');
+            localStorage.removeItem('user_name');
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('portal-screen').style.display = 'none';
+        }
+
+        function initPortal() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('portal-screen').style.display = 'flex';
+            
+            if(currentUserRole === 'instructor') {
+                document.getElementById('user-display-role').innerText = `${currentUsername} (INSTRUCTOR)`;
+            } else {
+                document.getElementById('user-display-role').innerText = currentUserRole.toUpperCase();
+            }
+            
+            renderStats();
+            renderMenu();
+        }
+
+        function renderStats() {
+            const db = getDB();
+            let activeCourses = db.courses;
+            if (currentUserRole === 'instructor') {
+                activeCourses = db.courses.filter(c => isInstructorMatch(c.instructor, currentUsername));
+            }
+
+            document.getElementById('stats-section').innerHTML = `
+                <div class="stat-card"><i class="fa-solid fa-users"></i><div><h4>${db.totalStudentsCount}</h4><small>Total Students</small></div></div>
+                <div class="stat-card"><i class="fa-solid fa-book"></i><div><h4>${activeCourses.length}</h4><small>Active Courses</small></div></div>
+                <div class="stat-card"><i class="fa-solid fa-clock"></i><div><h4>${db.requests.filter(r=>r.status==='Pending').length}</h4><small>Pending Requests</small></div></div>
+            `;
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('grid-items');
+            if (currentUserRole === 'admin') {
+                grid.innerHTML = `
+                    <div class="portal-item" onclick="openFeature('Manage Students')"><div class="icon-box"><i class="fa-solid fa-users-gear"></i></div><b>Manage Students</b></div>
+                    <div class="portal-item" onclick="openFeature('Manage Courses')"><div class="icon-box"><i class="fa-solid fa-book-open"></i></div><b>Manage Courses</b></div>
+                    <div class="portal-item" onclick="openFeature('Pending Requests')"><div class="icon-box"><i class="fa-solid fa-envelope-open-text"></i></div><b>Requests</b></div>
+                `;
+            } else if (currentUserRole === 'instructor') {
+                grid.innerHTML = `
+                    <div class="portal-item" onclick="openFeature('Upload Grades')"><div class="icon-box"><i class="fa-solid fa-file-circle-plus"></i></div><b>Upload Grades</b></div>
+                    <div class="portal-item" onclick="openFeature('Manage Courses')"><div class="icon-box"><i class="fa-solid fa-book-open"></i></div><b>My Courses</b></div>
+                `;
+            } else {
+                grid.innerHTML = `
+                    <div class="portal-item" onclick="openFeature('View Grades')"><div class="icon-box"><i class="fa-solid fa-square-poll-vertical"></i></div><b>My Grades</b></div>
+                    <div class="portal-item" onclick="openFeature('Student Requests')"><div class="icon-box"><i class="fa-solid fa-paper-plane"></i></div><b>Service Requests</b></div>
+                `;
+            }
+        }
+
+        function openFeature(feature) {
+            document.getElementById('modal-title-text').innerText = feature;
+            const db = getDB();
+            let html = '';
+
+            if (feature === 'Manage Students') {
+                html = `
+                    <div class="admin-controls">
+                        <input type="text" class="input-ctrl" style="width:200px;" id="student-search" placeholder="Search..." onkeyup="filterStudents()">
+                        <div>
+                            <button class="btn-action" onclick="addStudentPrompt()">+ Add Student</button>
+                            <button class="btn-action" style="background:#475569;" onclick="window.print()">Print</button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Level</th><th>Actions</th></tr></thead>
+                        <tbody id="student-table-body">${renderStudentRows(db.students)}</tbody>
+                    </table>
+                `;
+            } else if (feature === 'Manage Courses') {
+                let displayedCourses = db.courses;
+                if (currentUserRole === 'instructor') {
+                    displayedCourses = db.courses.filter(c => isInstructorMatch(c.instructor, currentUsername));
+                }
+
+                html = `
+                    <table class="data-table">
+                        <thead><tr><th>Code</th><th>Course Name</th><th>Instructor</th><th>Status</th>${currentUserRole==='instructor'?'<th>Action</th>':''}</tr></thead>
+                        <tbody>${displayedCourses.length > 0 ? displayedCourses.map(c=>`
+                            <tr>
+                                <td><b>${c.code}</b></td>
+                                <td>${c.name}</td>
+                                <td><b>${c.instructor}</b></td>
+                                <td><span style="color:${c.regStatus==='Open'?'green':'red'};font-weight:bold">${c.regStatus}</span></td>
+                                ${currentUserRole==='instructor'?`<td><button class="btn-action" style="background:#0284c7;" onclick="toggleCourseStatus('${c.code}')">Toggle Status</button></td>`:''}
+                            </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;">No courses found for this instructor name.</td></tr>'}
+                        </tbody>
+                    </table>
+                `;
+            } else if (feature === 'View Grades') {
+                html = `
+                    <table class="data-table">
+                        <thead><tr><th>Code</th><th>Course Name</th><th>Grade</th></tr></thead>
+                        <tbody>${db.studentGrades.map(g=>`<tr><td><b>${g.code}</b></td><td>${g.course}</td><td><b style="color:var(--purple); font-size:16px;">${g.grade}</b></td></tr>`).join('')}</tbody>
+                    </table>
+                `;
+            } else if (feature === 'Upload Grades') {
+                let doctorCourses = db.courses;
+                if (currentUserRole === 'instructor') {
+                    doctorCourses = db.courses.filter(c => isInstructorMatch(c.instructor, currentUsername));
+                }
+
+                if (doctorCourses.length === 0) {
+                    html = `<p style="color:red; font-weight:bold; text-align:center;">No courses assigned under name "${currentUsername}".</p>`;
+                } else {
+                    html = `
+                        <form onsubmit="handleGradeSubmit(event)">
+                            <label><b>Select Course:</b></label>
+                            <select id="grade-course-select" class="input-ctrl">
+                                ${doctorCourses.map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('')}
+                            </select>
+                            <label><b>Select Student:</b></label>
+                            <select id="grade-student-select" class="input-ctrl">
+                                ${db.students.map(s => `<option value="${s.id}">${s.name} (${s.id})</option>`).join('')}
+                            </select>
+                            <label><b>Grade:</b></label>
+                            <input type="text" id="grade-val" class="input-ctrl" placeholder="e.g. A, A+, B, C" required>
+                            <button type="submit" class="btn-action" style="width:100%; margin-top:10px;">Save & Publish Grade</button>
+                        </form>
+                    `;
+                }
+            } else if (feature === 'Pending Requests' || feature === 'Student Requests') {
+                html = `
+                    <div style="margin-bottom:10px;">
+                        ${currentUserRole==='student'?`<button class="btn-action" onclick="addRequestPrompt()">+ New Request</button>`:''}
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>Request ID</th><th>Student Name</th><th>Request Type</th><th>Status</th>${currentUserRole==='admin'?'<th>Action</th>':''}</tr></thead>
+                        <tbody>${db.requests.map(r=>`
+                            <tr>
+                                <td><b>${r.id}</b></td>
+                                <td>${r.name}</td>
+                                <td>${r.type}</td>
+                                <td><b style="color:${r.status==='Approved'?'green':'orange'}">${r.status}</b></td>
+                                ${currentUserRole==='admin'?`<td>${r.status==='Pending'?`<button class="btn-action" style="background:green;" onclick="approveRequest('${r.id}')">Approve</button>`:'Done'}</td>`:''}
+                            </tr>
+                        `).join('')}</tbody>
+                    </table>
+                `;
+            }
+
+            document.getElementById('modal-body-content').innerHTML = html;
+            document.getElementById('modal-popup').style.display = 'flex';
+        }
+
+        function toggleCourseStatus(courseCode) {
+            const db = getDB();
+            let c = db.courses.find(item => item.code === courseCode);
+            if(c) {
+                c.regStatus = c.regStatus === 'Open' ? 'Closed' : 'Open';
+                saveDB(db);
+                openFeature('Manage Courses');
+            }
+        }
+
+        function renderStudentRows(list) {
+            return list.map(s => `
+                <tr>
+                    <td>${s.id}</td><td>${s.name}</td><td>${s.dept}</td><td>${s.level}</td>
+                    <td>
+                        <button class="btn-action" style="background:#0284c7;" onclick="editStudent('${s.id}')">Edit</button>
+                        <button class="btn-action" style="background:#dc2626;" onclick="deleteStudent('${s.id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterStudents() {
+            const q = document.getElementById('student-search').value.toLowerCase();
+            const db = getDB();
+            const filtered = db.students.filter(s => s.name.toLowerCase().includes(q) || s.id.includes(q));
+            document.getElementById('student-table-body').innerHTML = renderStudentRows(filtered);
+        }
+
+        function addStudentPrompt() {
+            const name = prompt("Student Name:");
+            const id = prompt("Student ID:");
+            const dept = prompt("Department (e.g. Computer Science):", "Computer Science");
+            const level = prompt("Level (e.g. Level 1, Level 3):", "Level 1");
+            
+            if(name && id && dept && level) {
+                const db = getDB();
+                db.students.push({ id, name, dept, level });
+                db.totalStudentsCount++;
+                saveDB(db);
+                openFeature('Manage Students');
+            }
+        }
+
+        function editStudent(id) {
+            const db = getDB();
+            let s = db.students.find(item => item.id === id);
+            if(s) {
+                const newName = prompt("Edit Name:", s.name);
+                if(newName) {
+                    s.name = newName;
+                    saveDB(db);
+                    openFeature('Manage Students');
+                }
+            }
+        }
+
+        function deleteStudent(id) {
+            if(confirm("Delete student?")) {
+                const db = getDB();
+                db.students = db.students.filter(s => s.id !== id);
+                db.totalStudentsCount--;
+                saveDB(db);
+                openFeature('Manage Students');
+            }
+        }
+
+        function handleGradeSubmit(e) {
+            e.preventDefault();
+            const courseCode = document.getElementById('grade-course-select').value;
+            const studentId = document.getElementById('grade-student-select').value;
+            const gradeVal = document.getElementById('grade-val').value;
+            
+            const db = getDB();
+            const courseObj = db.courses.find(c => c.code === courseCode);
+
+            const existingGradeIndex = db.studentGrades.findIndex(g => g.code === courseCode && g.studentId === studentId);
+            if (existingGradeIndex !== -1) {
+                db.studentGrades[existingGradeIndex].grade = gradeVal;
+            } else {
+                db.studentGrades.push({
+                    studentId: studentId,
+                    code: courseCode,
+                    course: courseObj ? courseObj.name : courseCode,
+                    grade: gradeVal
+                });
+            }
+
+            saveDB(db);
+            showToast("Grade linked & saved permanently!");
+            closeModal();
+        }
+
+        function addRequestPrompt() {
+            const type = prompt("Enter Request Type (e.g. Enrollment Certificate):");
+            if(type) {
+                const db = getDB();
+                db.requests.push({ id: 'REQ-' + (100 + db.requests.length + 1), name: 'Mariam Mohamed', type: type, status: 'Pending' });
+                saveDB(db);
+                openFeature('Student Requests');
+            }
+        }
+
+        function approveRequest(reqId) {
+            const db = getDB();
+            let req = db.requests.find(r => r.id === reqId);
+            if(req) {
+                req.status = 'Approved';
+                saveDB(db);
+                openFeature('Pending Requests');
+            }
+        }
+
+        function closeModal() { document.getElementById('modal-popup').style.display = 'none'; }
+        window.onload = () => { 
+            if(localStorage.getItem('user_role')) { 
+                currentUserRole = localStorage.getItem('user_role'); 
+                currentUsername = localStorage.getItem('user_name') || '';
+                initPortal(); 
+            } 
+        };
+    </script>
+</body>
+</html>

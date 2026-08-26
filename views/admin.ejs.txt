@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>لوحة التحكم - Admin</title>
+    <style>
+        body { font-family: sans-serif; background: #f1f5f9; padding: 30px; }
+        .box { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        form { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        input, select, button { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: right; }
+        th { background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <h2>🛠️ لوحة التحكم للمسؤول (Admin Control Center) - <a href="/logout" style="color: #ef4444; font-size: 14px;">تسجيل الخروج</a></h2>
+
+    <div class="box">
+        <h3>➕ إضافة مادة جديدة</h3>
+        <form action="/admin/add-course" method="POST">
+            <input type="text" name="title" placeholder="اسم المادة" required>
+            <input type="text" name="code" placeholder="الكود (مثال CS101)" required>
+            <input type="text" name="doctor" placeholder="اسم الدكتور" required>
+            <input type="number" name="hours" placeholder="عدد الساعات" required>
+            <button type="submit">إضافة المادة</button>
+        </form>
+        <table>
+            <tr><th>المادة</th><th>الكود</th><th>الدكتور</th><th>إجراء</th></tr>
+            <% courses.forEach(c => { %>
+                <tr>
+                    <td><%= c.title %></td>
+                    <td><%= c.code %></td>
+                    <td><%= c.doctor %></td>
+                    <td><a href="/admin/delete-course/<%= c.id %>" style="color: red;">حذف</a></td>
+                </tr>
+            <% }) %>
+        </table>
+    </div>
+
+    <div class="box">
+        <h3>👨‍🏫 إضافة دكتور جديد</h3>
+        <form action="/admin/add-doctor" method="POST">
+            <input type="text" name="name" placeholder="اسم الدكتور" required>
+            <input type="text" name="department" placeholder="القسم" required>
+            <input type="email" name="email" placeholder="البريد الإلكتروني" required>
+            <button type="submit">إضافة دكتور</button>
+        </form>
+    </div>
+
+    <div class="box">
+        <h3>📢 نشر إعلان جديد</h3>
+        <form action="/admin/add-announcement" method="POST">
+            <input type="text" name="title" placeholder="عنوان الإعلان" required>
+            <input type="date" name="date" required>
+            <input type="text" name="category" placeholder="التصنيف (هام / عام)" required>
+            <button type="submit">نشر الإعلان</button>
+        </form>
+    </div>
+
+</body>
+</html>
